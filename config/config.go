@@ -11,11 +11,10 @@ type general struct {
 }
 
 type Relay struct {
-	ID          string
-	Port        string
-	Address     string
-	DiscoverKey string
-	PrivateKey  string
+	ID         string
+	Port       string
+	Address    string
+	PrivateKey string
 }
 
 type Client struct {

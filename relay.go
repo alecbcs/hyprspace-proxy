@@ -105,7 +105,7 @@ func main() {
 
 	fmt.Println("[+] Setting Up Node Discovery via DHT")
 	// Setup P2P Discovery
-	go p2p.Discover(ctx, host, dht, config.Global.Relay.DiscoverKey, peerTable)
+	go p2p.Discover(ctx, host, dht, peerTable)
 
 	proxy.Init(tnet, config.Global.Clients)
 
