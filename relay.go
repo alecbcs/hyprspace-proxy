@@ -117,16 +117,13 @@ func main() {
 	var plen int
 	for {
 		plen, err = tunDev.Read(packet, 0)
-		if err != nil {
-			if err.Error() == "EOF" {
-				continue
-			}
+		if err != nil && err.Error() != "EOF" {
 			log.Fatal(err)
 		}
 		header, _ = ipv4.ParseHeader(packet)
-		_, ok := peerTable[header.Dst.String()]
+		peer, ok := peerTable[header.Dst.String()]
 		if ok {
-			stream, err = host.NewStream(ctx, peerTable[header.Dst.String()], p2p.Protocol)
+			stream, err = host.NewStream(ctx, peer, p2p.Protocol)
 			if err != nil {
 				log.Println(err)
 				continue
