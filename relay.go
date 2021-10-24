@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hyprspace/hyprspace/p2p"
 	"github.com/hyprspace/relay/config"
+	"github.com/hyprspace/relay/p2p"
 	"github.com/hyprspace/relay/proxy"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
@@ -91,7 +91,7 @@ func main() {
 	// Setup Peer Table for Quick Packet --> Dest ID lookup
 	peerTable := make(map[string]peer.ID)
 	for _, client := range config.Global.Clients {
-		peerTable[client.Address], err = peer.Decode(client.ID)
+		peerTable[string(net.ParseIP(client.Address))], err = peer.Decode(client.ID)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -111,7 +111,7 @@ func main() {
 
 	fmt.Println("[+] Network Setup Complete...Waiting on Node Discovery")
 	// Listen For New Packets on TUN Interface
-	packet := make([]byte, 1420)
+	packet := make([]byte, 1500)
 	var stream network.Stream
 	var header *ipv4.Header
 	var plen int
@@ -121,7 +121,7 @@ func main() {
 			log.Fatal(err)
 		}
 		header, _ = ipv4.ParseHeader(packet)
-		peer, ok := peerTable[header.Dst.String()]
+		peer, ok := peerTable[string(header.Dst)]
 		if ok {
 			stream, err = host.NewStream(ctx, peer, p2p.Protocol)
 			if err != nil {
@@ -140,7 +140,7 @@ func streamHandler(stream network.Stream) {
 	if _, ok := RevLookup[stream.Conn().RemotePeer().Pretty()]; !ok {
 		stream.Reset()
 	}
-	buf := make([]byte, 1420)
+	buf := make([]byte, 1500)
 	plen, _ := stream.Read(buf)
 	tunDev.Write(buf[:plen], 0)
 	stream.Close()
