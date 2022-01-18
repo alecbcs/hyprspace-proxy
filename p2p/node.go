@@ -32,7 +32,7 @@ func CreateNode(ctx context.Context, inputKey string, port int, handler network.
 	ip4tcp := fmt.Sprintf("/ip4/0.0.0.0/tcp/%d", port)
 
 	// Create libp2p node
-	node, err = libp2p.New(ctx,
+	node, err = libp2p.New(
 		libp2p.ListenAddrStrings(ip6tcp, ip4tcp),
 		libp2p.Identity(privateKey),
 		libp2p.DefaultSecurity,
