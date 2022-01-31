@@ -15,7 +15,6 @@ import (
 	"github.com/hyprspace/relay/proxy"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
-	"golang.org/x/net/ipv4"
 	"golang.zx2c4.com/wireguard/tun"
 	"golang.zx2c4.com/wireguard/tun/netstack"
 )
@@ -29,7 +28,9 @@ var (
 	tnet *netstack.Net
 	// RevLookup allow quick lookups of an incoming stream
 	// for security before accepting or responding to any data.
-	RevLookup map[string]bool
+	RevLookup map[string]string
+	// activeStreams is a map of active streams to a peer
+	activeStreams map[string]network.Stream
 )
 
 func main() {
@@ -98,9 +99,9 @@ func main() {
 	}
 
 	// Setup reverse lookup hash map for authentication.
-	RevLookup = make(map[string]bool, len(config.Global.Clients))
+	RevLookup = make(map[string]string, len(config.Global.Clients))
 	for _, client := range config.Global.Clients {
-		RevLookup[client.ID] = true
+		RevLookup[client.ID] = client.Address
 	}
 
 	fmt.Println("[+] Setting Up Node Discovery via DHT")
@@ -111,25 +112,38 @@ func main() {
 
 	fmt.Println("[+] Network Setup Complete...Waiting on Node Discovery")
 	// Listen For New Packets on TUN Interface
-	packet := make([]byte, 1500)
+	activeStreams = make(map[string]network.Stream)
+	packet := make([]byte, 1420)
 	var stream network.Stream
-	var header *ipv4.Header
+	var ok bool
 	var plen int
+	var dst string
+	var peer peer.ID
 	for {
 		plen, err = tunDev.Read(packet, 0)
-		if err != nil && err.Error() != "EOF" {
-			log.Fatal(err)
+		if err != nil {
+			log.Println(err)
+			continue
 		}
-		header, _ = ipv4.ParseHeader(packet)
-		peer, ok := peerTable[string(header.Dst)]
+		dst = net.IPv4(packet[16], packet[17], packet[18], packet[19]).String()
+		stream, ok = activeStreams[dst]
 		if ok {
+			_, err = stream.Write(packet[:plen])
+			if err == nil {
+				continue
+			}
+			stream.Close()
+			delete(activeStreams, dst)
+			ok = false
+		}
+		if peer, ok = peerTable[dst]; ok {
 			stream, err = host.NewStream(ctx, peer, p2p.Protocol)
 			if err != nil {
 				log.Println(err)
 				continue
 			}
 			stream.Write(packet[:plen])
-			stream.Close()
+			activeStreams[dst] = stream
 		}
 	}
 
@@ -139,9 +153,18 @@ func streamHandler(stream network.Stream) {
 	// If the remote node ID isn't in the list of known nodes don't respond.
 	if _, ok := RevLookup[stream.Conn().RemotePeer().Pretty()]; !ok {
 		stream.Reset()
+		return
 	}
-	buf := make([]byte, 1500)
-	plen, _ := stream.Read(buf)
-	tunDev.Write(buf[:plen], 0)
-	stream.Close()
+	var err error
+	var packet = make([]byte, 1420)
+	var plen int
+	for {
+		plen, err = stream.Read(packet)
+		if err != nil {
+			stream.Close()
+			delete(activeStreams, RevLookup[stream.Conn().RemotePeer().Pretty()])
+			return
+		}
+		tunDev.Write(packet[:plen], 0)
+	}
 }
