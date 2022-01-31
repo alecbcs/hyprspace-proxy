@@ -1,4 +1,4 @@
-module github.com/hyprspace/relay
+module github.com/hyprspace/proxy
 
 go 1.16
 

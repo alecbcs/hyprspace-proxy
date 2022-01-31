@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hyprspace/relay/config"
-	"github.com/hyprspace/relay/p2p"
-	"github.com/hyprspace/relay/proxy"
+	"github.com/hyprspace/proxy/config"
+	"github.com/hyprspace/proxy/p2p"
+	"github.com/hyprspace/proxy/proxy"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 	"golang.zx2c4.com/wireguard/tun"
@@ -21,7 +21,7 @@ import (
 
 var (
 	// tunDev is the tun device used to pass packets between
-	// Hyprspace and the relay proxy.
+	// Hyprspace and the proxy proxy.
 	tunDev tun.Device
 	// tnet is the virtualized network to communicate with the TUN device within
 	// the proxy.
@@ -40,7 +40,7 @@ func main() {
  / __  / /_/ / /_/ / /   ___/ / /_/ / /_/ / /__/  __/  
 /_/ /_/\__, / .___/_/   /____/ .___/\__,_/\___/\___/    
       /____/_/              /_/                      `)
-	fmt.Println("Relay")
+	fmt.Println("Proxy")
 	fmt.Printf("Version: %s\n\n", config.Global.General.Version)
 
 	// Setup Variables
@@ -48,7 +48,7 @@ func main() {
 
 	// Create new virtualized TUN device.
 	tunDev, tnet, err = netstack.CreateNetTUN(
-		[]net.IP{net.ParseIP(strings.Split(config.Global.Relay.Address, "/")[0])},
+		[]net.IP{net.ParseIP(strings.Split(config.Global.Proxy.Address, "/")[0])},
 		[]net.IP{net.ParseIP("1.1.1.1")},
 		1420)
 	if err != nil {
@@ -62,7 +62,7 @@ func main() {
 
 	// Check that the listener port is available.
 	var ln net.Listener
-	port := config.Global.Relay.Port
+	port := config.Global.Proxy.Port
 	ln, err = net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatal(errors.New("could not create node, listen port already in use by something else"))
@@ -75,7 +75,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	privateKey, err := base64.StdEncoding.DecodeString(config.Global.Relay.PrivateKey)
+	privateKey, err := base64.StdEncoding.DecodeString(config.Global.Proxy.PrivateKey)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -114,19 +114,14 @@ func main() {
 	// Listen For New Packets on TUN Interface
 	activeStreams = make(map[string]network.Stream)
 	packet := make([]byte, 1420)
-	var stream network.Stream
-	var ok bool
-	var plen int
-	var dst string
-	var peer peer.ID
 	for {
-		plen, err = tunDev.Read(packet, 0)
+		plen, err := tunDev.Read(packet, 0)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		dst = net.IPv4(packet[16], packet[17], packet[18], packet[19]).String()
-		stream, ok = activeStreams[dst]
+		dst := net.IPv4(packet[16], packet[17], packet[18], packet[19]).String()
+		stream, ok := activeStreams[dst]
 		if ok {
 			_, err = stream.Write(packet[:plen])
 			if err == nil {
@@ -136,7 +131,7 @@ func main() {
 			delete(activeStreams, dst)
 			ok = false
 		}
-		if peer, ok = peerTable[dst]; ok {
+		if peer, ok := peerTable[dst]; ok {
 			stream, err = host.NewStream(ctx, peer, p2p.Protocol)
 			if err != nil {
 				log.Println(err)
@@ -155,11 +150,9 @@ func streamHandler(stream network.Stream) {
 		stream.Reset()
 		return
 	}
-	var err error
 	var packet = make([]byte, 1420)
-	var plen int
 	for {
-		plen, err = stream.Read(packet)
+		plen, err := stream.Read(packet)
 		if err != nil {
 			stream.Close()
 			delete(activeStreams, RevLookup[stream.Conn().RemotePeer().Pretty()])
