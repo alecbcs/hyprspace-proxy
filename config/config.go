@@ -2,7 +2,7 @@ package config
 
 type Config struct {
 	General general
-	Relay   Relay
+	Proxy   Proxy
 	Clients []Client
 }
 
@@ -10,7 +10,7 @@ type general struct {
 	Version string
 }
 
-type Relay struct {
+type Proxy struct {
 	ID         string
 	Port       string
 	Address    string
@@ -31,8 +31,8 @@ func init() {
 		General: general{
 			Version: "0.0.1",
 		},
-		Relay: envParseRelay(Relay{
-			// Default values for the internal relay config.
+		Proxy: envParseProxy(Proxy{
+			// Default values for the internal proxy config.
 			// May be overwritten by environment variables if present.
 			Port:    "8001",
 			Address: "10.1.1.1/24",

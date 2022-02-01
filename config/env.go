@@ -13,12 +13,12 @@ type envClient struct {
 	Ports string
 }
 
-func envParseRelay(input Relay) Relay {
+func envParseProxy(input Proxy) Proxy {
 	confStruct := reflect.ValueOf(&input).Elem()
 	numFields := confStruct.NumField()
 	for i := 0; i < numFields; i++ {
 		fieldName := confStruct.Type().Field(i).Name
-		evName := "RELAY" + "_" + strings.ToUpper(fieldName)
+		evName := "PROXY" + "_" + strings.ToUpper(fieldName)
 
 		evVal, evExists := os.LookupEnv(evName)
 		if evExists {
@@ -34,7 +34,7 @@ func envParseClients() (output []Client) {
 	numFields := confStruct.NumField()
 	for i := 0; i < numFields; i++ {
 		fieldName := confStruct.Type().Field(i).Name
-		evName := "RELAY" + "_" + "CLIENT" + "_" + strings.ToUpper(fieldName)
+		evName := "PROXY" + "_" + "CLIENT" + "_" + strings.ToUpper(fieldName)
 
 		evVal, evExists := os.LookupEnv(evName)
 		if evExists {

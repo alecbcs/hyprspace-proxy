@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hyprspace/relay/config"
+	"github.com/hyprspace/proxy/config"
 	"golang.zx2c4.com/wireguard/tun/netstack"
 )
 

@@ -14,14 +14,14 @@ RUN go mod download
 COPY . .
 
 # Build the Go app
-RUN go build -o hyprspace-relay .
+RUN go build -o hyprspace-proxy .
 
 # Start again with minimal envoirnment.
 FROM ubuntu:latest
 
-COPY --from=builder /app/hyprspace-relay /bin/hyprspace-relay
+COPY --from=builder /app/hyprspace-proxy /bin/hyprspace-proxy
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
-CMD ["hyprspace-relay"]
+CMD ["hyprspace-proxy"]

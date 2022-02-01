@@ -30,4 +30,4 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ghcr.io/hyprspace/relay:latest
+            ghcr.io/hyprspace/proxy:latest
