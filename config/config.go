@@ -29,7 +29,7 @@ func init() {
 	// Build default config.
 	Global = Config{
 		General: general{
-			Version: "0.0.1",
+			Version: "0.2.0",
 		},
 		Proxy: envParseProxy(Proxy{
 			// Default values for the internal proxy config.

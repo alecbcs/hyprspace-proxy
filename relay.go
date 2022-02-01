@@ -92,7 +92,7 @@ func main() {
 	// Setup Peer Table for Quick Packet --> Dest ID lookup
 	peerTable := make(map[string]peer.ID)
 	for _, client := range config.Global.Clients {
-		peerTable[string(net.ParseIP(client.Address))], err = peer.Decode(client.ID)
+		peerTable[net.ParseIP(client.Address).String()], err = peer.Decode(client.ID)
 		if err != nil {
 			log.Fatal(err)
 		}
