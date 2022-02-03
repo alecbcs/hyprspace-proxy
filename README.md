@@ -1,5 +1,18 @@
+<img src="https://user-images.githubusercontent.com/19558067/152439775-cee34d8d-24bd-4593-b997-9338394bfcc9.png" width="250">
+
 # Hyprspace proxy
+[![Go Report Card](https://goreportcard.com/badge/github.com/hyprspace/proxy)](https://goreportcard.com/report/github.com/hyprspace/proxy)
+[![](https://img.shields.io/matrix/hyprspace:matrix.org)](https://matrix.to/#/%23hyprspace:matrix.org)
+
 A Containerized Hyprspace proxy
+
+## Table of Contents
+- [What is a Hyprspace Proxy?](#what-is-a-hyprspace-proxy)
+- [Use Cases](#use-cases)
+  - [A Digital Nomad](#a-digital-nomad)
+  - [A Privacy Advocate](#a-privacy-advocate)
+- [Getting Started](#getting-started)
+- [Examples](#examples)
 
 ## What is a Hyprspace Proxy?
 I initially started working on this idea a few years ago in my freshman year of college. At the time, I wanted to run a Nextcloud instance from a server under my bed in my dorm room, but surprise...the university wasn't going to let me forward a port on their network or give me a public ip address. For a while I used a VPN running on a small cloud instance, but that required all of my devices to be always connected to the VPN and I couldn't easily share files with anyone of my friends. So somehow I needed to use my cloud instance to proxy information from the web to the Nextcloud server on the VPN.... On my second iteration of the system I started doing that with just a couple of handy iptables rules and a Wireguard server. Even after that system though, I've kept dreaming of something even better, something where I could use a small cloud vm to be the gateway for any number of instances hosting services on local machines without public ip addresses.
