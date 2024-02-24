@@ -1,8 +1,7 @@
-<img src="https://user-images.githubusercontent.com/19558067/152439775-cee34d8d-24bd-4593-b997-9338394bfcc9.png" width="250">
+<img src="https://user-images.githubusercontent.com/19558067/152439775-cee34d8d-24bd-4593-b997-9338394bfcc9.png" width="150">
 
 # Hyprspace proxy
-[![Go Report Card](https://goreportcard.com/badge/github.com/hyprspace/proxy)](https://goreportcard.com/report/github.com/hyprspace/proxy)
-[![](https://img.shields.io/matrix/hyprspace:matrix.org)](https://matrix.to/#/%23hyprspace:matrix.org)
+> :warning: This repository has been archived and is no longer maintained.
 
 A Containerized Hyprspace proxy
 
